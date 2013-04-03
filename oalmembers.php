@@ -24,7 +24,9 @@ function oalmembers_install() {
 					bsaid int NOT NULL ,
 					birthdate date NOT NULL ,
 					firstname varchar(100) NOT NULL ,
+					lastname varchar(100) NOT NULL ,
 					chapter varchar(100) ,
+					level varchar (100) NOT NULL,
 					ordealdate date NOT NULL ,
 					brotherhooddate date ,
 					vigildate date ,
@@ -63,22 +65,24 @@ function oalmembers_options() {
 	$rows_imported = 0;
 	if( 'POST' == $_SERVER['REQUEST_METHOD'])
 		$records_updated = oalmembers_reload($_FILES['upload_file']['tmp_name']);
-	echo '<p>In OA Lodgemaster, create a CSV export file that contains:';
+	echo '<p>In OA Lodgemaster, create a CSV export file (field delimiter: ",", no field enclosures, line ending: "\r\n", and headers as listed after each field name below) that contains:';
 	echo '<ul>';
-	echo '<li>BSA Person ID</li>';
-	echo '<li>Dues<li>';
-	echo '<li>Firstname</li>';
-	echo '<li>Date of Birth</li>';
-	echo '<li>Chapter</li>';
-	echo '<li>Ordeal Date</li>';
-	echo '<li>Brotherhood Date</li>';
-	echo '<li>Vigil Induction Date</li>';
+	echo '<li>BSA Person ID "BSA_person_id"</li>';
+	echo '<li>Dues "max_duesyear"<li>';
+	echo '<li>Firstname "firstname"</li>';
+	echo '<li>Lastname "lastname"</li>';
+	echo '<li>Date of Birth "Birthday"</li>';
+	echo '<li>Chapter "Chapter_name"</li>';
+	echo '<li>Level "level"</li>';
+	echo '<li>Ordeal Date "ordeal_date"</li>';
+	echo '<li>Brotherhood Date "brotherhood_date"</li>';
+	echo '<li>Vigil Induction Date "vigil_induction_date"</li>';
 	echo '</ul></p>';
 	echo '<br />';
 	echo '<p>Last Updated: ' . date('F j, Y g:i:s A', get_option( "oalmembers_last_update")) . '</p>';
 	echo '<form id="oalmembers_upload" name="oalmembers_upload" method="post" action="" enctype="multipart/form-data" class="oalmembers_upload_form">';
-	echo '<fieldset name="upload_file">';
-	echo '<label for="upload_file">File:</label>';
+	echo '<fieldset name="upload_file" style="margin-bottom:10px;">';
+	echo '<label for="upload_file" style="margin-right:10px;">File:</label>';
 	echo '<input type="file" name="upload_file" />';
 	echo '</fieldset>';
 	echo '<input type="submit" name="upload" values="Upload" />';
@@ -123,11 +127,13 @@ function oalmembers_reload($file) {
 		$birthdate = date('Y-m-d', strtotime($row['Birthdate']));
 		$chapter = $row['Chapter_name'];
 		$firstname = $row['firstname'];
+		$lastname = $row['lastname'];
+		$level = $row['level'];
 		$ordealdate = date('Y-m-d', strtotime($row['ordeal_date']));
 		$brotherhooddate = ('' == strtotime($row['brotherhood_date'])) ? null : date('Y-m-d', strtotime($row['brotherhood_date']));
 		$vigildate = ('' == $row['vigil_induction_date']) ? null : date('Y-m-d', strtotime($row['vigil_induction_date']));
 		$dues = absint($row['max_duesyear']);
-		$wpdb->query($wpdb->prepare("INSERT INTO $table_name (bsaid, birthdate, firstname, chapter, ordealdate, brotherhooddate, vigildate, dues) VALUES (%d, %s, %s, %s, %s, %s, %s, %d)", $bsaid, $birthdate, $firstname, $chapter, $ordealdate, $brotherhooddate, $vigildate, $dues));
+		$wpdb->query($wpdb->prepare("INSERT INTO $table_name (bsaid, birthdate, firstname, lastname, chapter, level, ordealdate, brotherhooddate, vigildate, dues) VALUES (%d, %s, %s, %s, %s, %s, %s, %s, %s, %d)", $bsaid, $birthdate, $firstname, $lastname, $chapter, $level, $ordealdate, $brotherhooddate, $vigildate, $dues));
 		$rows_imported++;
 	}
 	update_option( "oalmembers_last_update", current_time('timestamp', 0));
@@ -147,10 +153,12 @@ function oalmembers_lookup_record() {
 		$result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE bsaid = %d AND birthdate = %s", $bsaid, $birthdate), ARRAY_A, 0);
 		if(null != $result) {
 			$firstname = $result['firstname'];
+			$lastname = $result['lastname'];
 			$birthdate = strtotime($result['birthdate']);
 			$bsaid = $result['bsaid'];
 			$dues = strtotime($result['dues'] . '-12-31');
 			$chapter = $result['chapter'];
+			$level = $result['level'];
 			$ordeal = strtotime($result['ordealdate']);
 			$brotherhood = (0 == $result['brotherhooddate']) ?  strtotime(date('Y-m-d', $ordeal) . ' +10 months') : strtotime($result['brotherhooddate']);
 			$vigil = (0 == $result['vigildate']) ? strtotime(date('Y-m-d', $brotherhood) . ' +2 years') : strtotime($result['vigildate']);
@@ -159,6 +167,10 @@ function oalmembers_lookup_record() {
 			$html .= "<tr>";
 			$html .= "<td>Firstname</td>";
 			$html .= "<td>$firstname</td>";
+			$html .= "</tr>";
+			$html .= "<tr>";
+			$html .= "<td>Lastname</td>";
+			$html .= "<td>$lastname</td>";
 			$html .= "</tr>";
 			$html .= "<tr>";
 			$html .= "<td>Birthdate</td>";
@@ -208,12 +220,12 @@ function oalmembers_lookup_record() {
 	}
 	$html .= "<div>";
 	$html .= '<form id="oalmembers" name="oalmembers" method="post" action="" class="oalmembers-form">';
-	$html .= '<fieldset name="bsaid">';
-	$html .= '<label for="bsaid">BSA ID:</label>';
+	$html .= '<fieldset name="bsaid" style="margin-bottom:10px;">';
+	$html .= '<label for="bsaid" style="margin-right:10px;">BSA ID:</label>';
 	$html .= '<input type="text" id="bsaid" value="" name="bsaid" />';
 	$html .= '</fieldset>';
-	$html .= '<fieldset name="birthdate">';
-	$html .= '<label for="birthdate">Birthdate:</label>';
+	$html .= '<fieldset name="birthdate" style="margin-bottom:10px;">';
+	$html .= '<label for="birthdate" style="margin-right:10px;">Birthdate:</label>';
 	$html .= '<input type="text" id="birthdate" value="" name="birthdate" />';
 	$html .= '</fieldset>';
 	$html .= '<fieldset class="submit">';
