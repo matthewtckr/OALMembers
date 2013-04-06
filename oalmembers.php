@@ -64,8 +64,14 @@ function oalmembers_options() {
 	}
 	echo '<div class="wrap">';
 	$rows_imported = 0;
-	if( 'POST' == $_SERVER['REQUEST_METHOD'])
-		$records_updated = oalmembers_reload($_FILES['upload_file']['tmp_name']);
+	if( 'POST' == $_SERVER['REQUEST_METHOD']) {
+		if ($oalm_roster = $_FILES['upload_file']['tmp_name'])
+			$records_updated = oalmembers_reload($oalm_roster);
+		if ($netami = $_POST['update_netami'])
+			$netami_updated = oalmembers_update_netami($netami);
+		if ($card_template = $_FILES['upload_card']['tmp_name'])
+			$card_updated = oalmembers_upload_card($card_template);
+	}
 	echo '<p>In OA Lodgemaster, create a CSV export file (field delimiter: ",", no field enclosures, line ending: "\r\n", and headers as listed after each field name below) that contains:';
 	echo '<ul>';
 	echo '<li>BSA Person ID "BSA_person_id"</li>';
@@ -81,16 +87,30 @@ function oalmembers_options() {
 	echo '<li>Vigil Induction Date "vigil_induction_date"</li>';
 	echo '</ul></p>';
 	echo '<br />';
-	echo '<p>Last Updated: ' . date('F j, Y g:i:s A', get_option( "oalmembers_last_update")) . '</p>';
 	echo '<form id="oalmembers_upload" name="oalmembers_upload" method="post" action="" enctype="multipart/form-data" class="oalmembers_upload_form">';
 	echo '<fieldset name="upload_file" style="margin-bottom:10px;">';
-	echo '<label for="upload_file" style="margin-right:10px;">File:</label>';
-	echo '<input type="file" name="upload_file" />';
+	echo '<p>Last Updated: ' . date('F j, Y g:i:s A', get_option( "oalmembers_last_update")) . '</p>';
+	echo '<label for="upload_file" style="margin-right:10px;">OALM Export:</label>';
+	echo '<input type="file" name="upload_file" accept=".csv" />';
+	echo '</fieldset>';
+	echo '<fieldset name="update_netami" style="margin-bottom:10px;">';
+	echo '<p>Current Netami Lekhiket: ' . get_option( "oalmembers_netami" ) . '</p>';
+	echo '<label for="update_netami" style="margin-right:10px;">Netami Lekhiket:</label>';
+	echo '<input type="text" name="update_netami" />';
+	echo '</fieldset>';
+	echo '<fieldset name="upload_card" style="margin-bottom:10px;">';
+	echo '<p><a href="' . plugins_url( oalmembers ) . '/card_template.png" target="_blank">Current Membership Card Template</a></p>';
+	echo '<label for="upload_card" style="margin-right:10px;">Membership Card Template:</label>';
+	echo '<input type="file" name="upload_card" accept="image/*" />';
 	echo '</fieldset>';
 	echo '<input type="submit" name="upload" values="Upload" />';
 	echo '</form>';
 	if(isset($records_updated))
 		echo "<p>Imported $records_updated records.</p>";
+	if(isset($netami_updated))
+		echo '<p>Updated Netami Lekhiket to ' . $netami_updated . '.</p>';
+	if(isset($card_updated))
+		echo '<p>Membership Card Template Updated: <a href="' . $card_updated . '" target="_blank">New Membership Card Template</a></p>';
 	echo '</div>';
 }
 
@@ -142,6 +162,17 @@ function oalmembers_reload($file) {
 	update_option( "oalmembers_last_update", current_time('timestamp', 0));
 	return $rows_imported;
 
+}
+
+function oalmembers_update_netami($netami) {
+	update_option( "oalmembers_netami", $netami);
+	return $netami;
+}
+
+function oalmembers_upload_card($file) {
+	$target = "/srv/http/wordpress/wp-content/plugins/oalmembers/card_template.png";
+	move_uploaded_file( $file, $target ); 
+	return (plugins_url( oalmembers ) . '/card_template.png');
 }
 
 function oalmembers_lookup_record() {
