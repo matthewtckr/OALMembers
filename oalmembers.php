@@ -50,7 +50,7 @@ function oalmembers_install() {
 	add_option( "oalmembers_lodge", NULL);
 	add_option( "oalmembers_style_name", array("HelveticaLTStd-Bold.otf","53",104,1057));
 	add_option( "oalmembers_style_title", array("HelveticaLTStd-Cond.otf","27",155,1013));
-	add_option( "oalmembers_style_netami", array("LinotypeZapfino Three.ttf","60", 290,907));
+	add_option( "oalmembers_style_netami", array("LinotypeZapfino Three.ttf","60", 250,907));
 	add_option( "oalmembers_style_expire", array("HelveticaLTStd-Roman.otf","33",749,897));
 }
 
@@ -196,9 +196,19 @@ function oalmembers_options() {
 		while (false !== ($entry = readdir($font_dir_handle))) {
 			if ($entry != "." && $entry != "..") {
 				echo '<tr>';
-				echo '<td><input type="checkbox" name="checkbox_' . $n . '" /></td>';
+				echo '<td><input type="checkbox" ';
+				if ($entry == get_option("oalmembers_style_name")[0] || $entry == get_option("oalmembers_style_title")[0] || $entry == get_option("oalmembers_style_netami")[0] || $entry == get_option("oalmembers_style_expire")[0]) {
+					echo 'disabled="disabled" ';
+					$disabled = TRUE;
+				} else {
+					$disabled = FALSE;
+				}
+				echo 'name="checkbox_' . $n . '" /></td>';
 				echo '<td><input type="hidden" name="delete_font_' . $n . '" value="' . $entry . '" /></td>';
-				echo '<td>' . $entry . '</td>';
+				echo '<td>' . $entry;
+				if ($disabled)
+					echo ' (in use)';
+				echo '</td>';
 				echo '</tr>';
 				$n++;
 			}
@@ -315,12 +325,13 @@ function oalmembers_options() {
 	echo '<input type="text" name="x_expire" size="3" value="' . get_option("oalmembers_style_expire")[2] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
 	echo '<label for="y_expire" style="margin-right:10px;">Y:</label>';
 	echo '<input type="text" name="y_expire" size="3" value="' . get_option("oalmembers_style_expire")[3] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
+	echo '</fieldset>';
+
+	echo '<input type="submit" name="upload" values="Upload" />';
 
 	$card_url = oalmembers_generate_card(TRUE, "First", "Lastname", "Jr.", "Level", "Chaptername", strtotime(date('Y') . "-12-31"), "0000000");
 	echo '<p>Preview:</p>';
 	echo '<img class="oalmembers_print" src="' . $card_url . '" style="width:3.53in;" />';
-	echo '</fieldset>';
-	echo '<input type="submit" name="upload" values="Upload" />';
 	echo '</form>';
 	if(isset($records_updated))
 		echo "<p>Imported $records_updated records.</p>";
@@ -538,7 +549,9 @@ function oalmembers_delete_font($font_name) {
 		rmdir(OALMEMBERS_PLUGIN_PATH . "fonts");
 	}
 	else {
-		unlink( OALMEMBERS_PLUGIN_PATH . "fonts/" . $font_name );
+		if ($font_name != get_option("oalmembers_style_name")[0] && $font_name != get_option("oalmembers_style_title")[0] && $font_name != get_option("oalmembers_style_netami")[0] && $font_name != get_option("oalmembers_style_expire")[0]) {
+			unlink( OALMEMBERS_PLUGIN_PATH . "fonts/" . $font_name );
+		}
 	}
 
 	return 0;

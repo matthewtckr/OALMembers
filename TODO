@@ -13,9 +13,9 @@ support other card template file types
 limit card generation to dues-current
 black and white print option
 #upload font files on options page
-delete font files on options page
+#delete font files on options page
 	#list fonts with delete checkboxes
-	note if used or not (disable delete checkbox if used and prevent deletion) (set format for text groups before checking, error if used)
+	#note if used or not (disable delete checkbox if used and prevent deletion) (set format for text groups before checking, error if used)
 	#sanitize POST to only subfiles of fonts/
 style text
 	#specify font
