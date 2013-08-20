@@ -3,7 +3,7 @@
 Plugin Name: OALM Member Lookup
 Plugin URL: http://www.tipisa.org/
 Description: Allow members to lookup their member record by BSA ID and Birthdate
-Version: 1.0
+Version: 2.0
 Author: Matt Tucker
 Author URI: mailto:matt.tucker@knights.ucf.edu
 License: Free To Use within Tipisa Lodge, Central Florida Council.  Contact Matt Tucker for distribution or re-use
@@ -596,7 +596,7 @@ function oalmembers_lookup_record() {
 			$html .= "ss.type = 'text/css';";
 			$html .= "ss.rel = 'stylesheet';";
 			$html .= "ss.media = 'print';";
-			$html .= "ss.href = 'http://99.189.136.160/wordpress/wp-content/plugins/oalmembers/style.css';";
+			$html .= "ss.href ='" . OALMEMBERS_PLUGIN_URL . "/style.css';";
 			$html .= "document.getElementsByTagName('head')[0].appendChild(ss);";
 			$html .= "</script>";
 			$html .= "<div>";

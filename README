@@ -1,0 +1,8 @@
+IMPORTANT!
+	For security purposes, make sure your web server is configured not to
+	serve directory indexes listing the files in the plugin directory or
+	any of the subdirectories (especially generated/). In Apache, this is
+	accomplished with the "Options -Indexes" directive in the main server
+	configuration file, or in a .htaccess if AllowOverride is enabled. You
+	can check that it's effective by navigating to <wordpress installation
+	directory>/wp-content/plugins/oalmembers/ where you should receive a 403	error.

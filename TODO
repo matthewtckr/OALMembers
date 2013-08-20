@@ -29,3 +29,5 @@ if fonts not available, don't print cards
 option to not print cards
 #option to set lodge
 if no fonts, remove "delete"
+more informative messages from functions
+write generated card file names as OALMID and Firstname concatenated and sha1 hashed
