@@ -52,6 +52,8 @@ function oalmembers_install() {
 	add_option( "oalmembers_style_title", array("HelveticaLTStd-Cond.otf","27",155,1013));
 	add_option( "oalmembers_style_netami", array("LinotypeZapfino Three.ttf","60", 250,907));
 	add_option( "oalmembers_style_expire", array("HelveticaLTStd-Roman.otf","33",749,897));
+	add_option( "oalmembers_style_barcode", array("code39.ttf","72",600,740));
+	add_option( "oalmembers_style_code", array("Courier10PitchBT-Roman.otf","24",650,715));
 }
 
 function oalmembers_uninstall() {
@@ -68,6 +70,8 @@ function oalmembers_uninstall() {
 	delete_option( "oalmembers_style_title");
 	delete_option( "oalmembers_style_netami");
 	delete_option( "oalmembers_style_expire");
+	delete_option( "oalmembers_style_barcode");
+	delete_option( "oalmembers_style_code");
 
 	unlink( OALMEMBERS_PLUGIN_PATH . "/card_template.png" );
 
@@ -116,6 +120,16 @@ function oalmembers_options() {
 		$style_expire = array($_POST['font_expire'], $_POST['size_expire'], $_POST['x_expire'], $_POST['y_expire']);
 		if (($style_expire == get_option(oalmembers_style_expire)) ? FALSE : $style_expire) {
 			$style_expire_updated = oalmembers_update_style('expire', $style_expire);
+		}
+
+		$style_barcode = array($_POST['font_barcode'], $_POST['size_barcode'], $_POST['x_barcode'], $_POST['y_barcode']);
+		if (($style_barcode == get_option(oalmembers_style_barcode)) ? FALSE : $style_barcode) {
+			$style_barcode_updated = oalmembers_update_style('barcode', $style_barcode);
+		}
+
+		$style_code = array($_POST['font_code'], $_POST['size_code'], $_POST['x_code'], $_POST['y_code']);
+		if (($style_code == get_option(oalmembers_style_code)) ? FALSE : $style_code) {
+			$style_code_updated = oalmembers_update_style('code', $style_code);
 		}
 
 		if ($font_dir_handle = opendir(OALMEMBERS_PLUGIN_PATH . "/fonts/")) {
@@ -197,7 +211,7 @@ function oalmembers_options() {
 			if ($entry != "." && $entry != "..") {
 				echo '<tr>';
 				echo '<td><input type="checkbox" ';
-				if ($entry == get_option("oalmembers_style_name")[0] || $entry == get_option("oalmembers_style_title")[0] || $entry == get_option("oalmembers_style_netami")[0] || $entry == get_option("oalmembers_style_expire")[0]) {
+				if ($entry == get_option("oalmembers_style_name")[0] || $entry == get_option("oalmembers_style_title")[0] || $entry == get_option("oalmembers_style_netami")[0] || $entry == get_option("oalmembers_style_expire")[0] || $entry == get_option("oalmembers_style_barcode")[0] || $entry == get_option("oalmembers_style_code")[0]) {
 					echo 'disabled="disabled" ';
 					$disabled = TRUE;
 				} else {
@@ -325,6 +339,58 @@ function oalmembers_options() {
 	echo '<input type="text" name="x_expire" size="3" value="' . get_option("oalmembers_style_expire")[2] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
 	echo '<label for="y_expire" style="margin-right:10px;">Y:</label>';
 	echo '<input type="text" name="y_expire" size="3" value="' . get_option("oalmembers_style_expire")[3] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
+
+	echo '<p>OALM ID Barcode:</p>';
+	echo '<label for="font_barcode" style="margin-right:10px;">Font:</label>';
+	echo '<select name="font_barcode" style="margin-right:10px;">';
+
+	if ($font_dir_handle = opendir(OALMEMBERS_PLUGIN_PATH . "/fonts/")) {
+		$n = 0;
+		while (false !== ($entry = readdir($font_dir_handle))) {
+			if ($entry != "." && $entry != "..") {
+				echo '<option '; 
+				if ($entry == get_option("oalmembers_style_barcode")[0])
+					echo 'selected="selected" ';
+				echo 'value="' . $entry . '" />' . $entry . '</option>';
+				$n++;
+			}
+		}
+		closedir($font_dir_handle);
+	}
+
+	echo '</select>';
+	echo '<label for="size_barcode" style="margin-right:10px;">Size:</label>';
+	echo '<input type="text" name="size_barcode" size="3" value="' . get_option("oalmembers_style_barcode")[1] . '" style="text-align:right; margin-right:10px;" />';
+	echo '<label for="x_barcode" style="margin-right:10px;">X:</label>';
+	echo '<input type="text" name="x_barcode" size="3" value="' . get_option("oalmembers_style_barcode")[2] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
+	echo '<label for="y_barcode" style="margin-right:10px;">Y:</label>';
+	echo '<input type="text" name="y_barcode" size="3" value="' . get_option("oalmembers_style_barcode")[3] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
+
+	echo '<p>OALM ID Barcode Label:</p>';
+	echo '<label for="font_code" style="margin-right:10px;">Font:</label>';
+	echo '<select name="font_code" style="margin-right:10px;">';
+
+	if ($font_dir_handle = opendir(OALMEMBERS_PLUGIN_PATH . "/fonts/")) {
+		$n = 0;
+		while (false !== ($entry = readdir($font_dir_handle))) {
+			if ($entry != "." && $entry != "..") {
+				echo '<option '; 
+				if ($entry == get_option("oalmembers_style_code")[0])
+					echo 'selected="selected" ';
+				echo 'value="' . $entry . '" />' . $entry . '</option>';
+				$n++;
+			}
+		}
+		closedir($font_dir_handle);
+	}
+
+	echo '</select>';
+	echo '<label for="size_code" style="margin-right:10px;">Size:</label>';
+	echo '<input type="text" name="size_code" size="3" value="' . get_option("oalmembers_style_code")[1] . '" style="text-align:right; margin-right:10px;" />';
+	echo '<label for="x_code" style="margin-right:10px;">X:</label>';
+	echo '<input type="text" name="x_code" size="3" value="' . get_option("oalmembers_style_code")[2] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
+	echo '<label for="y_code" style="margin-right:10px;">Y:</label>';
+	echo '<input type="text" name="y_code" size="3" value="' . get_option("oalmembers_style_code")[3] . '" style="text-align:right;" /><span style="margin-right:10px;">px</span>';
 	echo '</fieldset>';
 
 	echo '<input type="submit" name="upload" values="Upload" />';
@@ -351,6 +417,10 @@ function oalmembers_options() {
 		echo '<p>Netami Style Updated</p>';
 	if(isset($style_expire_updated))
 		echo '<p>Expire Style Updated</p>';
+	if(isset($style_barcode_updated))
+		echo '<p>OALM ID Barcode Style Updated</p>';
+	if(isset($style_code_updated))
+		echo '<p>OALM ID Barcode Label Style Updated</p>';
 	if(isset($deleted_fonts))
 		foreach ($deleted_fonts as $font)
 			echo '<p>Deleted "' . $font . '"</p>';
@@ -481,6 +551,22 @@ function oalmembers_generate_card($overwrite, $firstname, $lastname, $suffix, $l
 		"y-coord" => $style_expire[3],
 	);
 
+	$style_barcode = get_option("oalmembers_style_barcode");
+	$barcode_opt = array(
+		"font" => $font_dir . $style_barcode[0],
+		"size" => $style_barcode[1],
+		"x-coord" => $style_barcode[2],
+		"y-coord" => $style_barcode[3],
+	);
+
+	$style_code = get_option("oalmembers_style_code");
+	$code_opt = array(
+		"font" => $font_dir . $style_code[0],
+		"size" => $style_code[1],
+		"x-coord" => $style_code[2],
+		"y-coord" => $style_code[3],
+	);
+
 	if($level == "Ordeal") {
         	$level_article = "an";
 	}
@@ -524,6 +610,18 @@ function oalmembers_generate_card($overwrite, $firstname, $lastname, $suffix, $l
 		$draw_expire->setFont($expire_opt['font']);
 		$draw_expire->setFontSize($expire_opt['size']);
 		$image->annotateImage($draw_expire,$expire_opt['x-coord'],$height-$expire_opt['y-coord'],0,date('n/j/y', $expire));
+
+		$draw_barcode = new ImagickDraw();
+		$draw_barcode->setFillColor('#000000');
+		$draw_barcode->setFont($barcode_opt['font']);
+		$draw_barcode->setFontSize($barcode_opt['size']);
+		$image->annotateImage($draw_barcode,$barcode_opt['x-coord'],$height-$barcode_opt['y-coord'],0, $oalmid);
+
+		$draw_code = new ImagickDraw();
+		$draw_code->setFillColor('#000000');
+		$draw_code->setFont($code_opt['font']);
+		$draw_code->setFontSize($code_opt['size']);
+		$image->annotateImage($draw_code,$code_opt['x-coord'],$height-$code_opt['y-coord'],0, $oalmid);
 
 		if(!(file_exists($path) && is_dir($path)))
         		mkdir($path, 0755);
@@ -651,7 +749,7 @@ function oalmembers_lookup_record() {
 
 			$card_url = oalmembers_generate_card(FALSE, $firstname, $lastname, $suffix, $level, $chapter, $dues, $oalmid);
 			$html .= '<img class="oalmembers_print" src="' . $card_url . '" style="width:3.53in;" />';
-			$html .= "<p><a href='javascript:window.print()'>Print Memebership Card</a></p>";
+			$html .= "<p><a href='javascript:window.print()'>Print Membership Card</a></p>";
 			$html .= "</div>";
 		} else {
 			$html .= "<div>";
