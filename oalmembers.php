@@ -52,7 +52,7 @@ function oalmembers_install() {
 	add_option( "oalmembers_style_title", array("HelveticaLTStd-Cond.otf","27",155,1013));
 	add_option( "oalmembers_style_netami", array("LinotypeZapfino Three.ttf","60", 250,907));
 	add_option( "oalmembers_style_expire", array("HelveticaLTStd-Roman.otf","33",749,897));
-	add_option( "oalmembers_style_barcode", array("code39.ttf","72",600,740));
+	add_option( "oalmembers_style_barcode", array("code39.ttf","80",560,740));
 	add_option( "oalmembers_style_code", array("Courier10PitchBT-Roman.otf","24",650,715));
 }
 
@@ -615,7 +615,7 @@ function oalmembers_generate_card($overwrite, $firstname, $lastname, $suffix, $l
 		$draw_barcode->setFillColor('#000000');
 		$draw_barcode->setFont($barcode_opt['font']);
 		$draw_barcode->setFontSize($barcode_opt['size']);
-		$image->annotateImage($draw_barcode,$barcode_opt['x-coord'],$height-$barcode_opt['y-coord'],0, $oalmid);
+		$image->annotateImage($draw_barcode,$barcode_opt['x-coord'],$height-$barcode_opt['y-coord'],0, "*" . $oalmid . "*");
 
 		$draw_code = new ImagickDraw();
 		$draw_code->setFillColor('#000000');
