@@ -1,7 +1,0 @@
-* {
-border-style:none !important;
-}
-
-#masthead,.entry-header,entry-meta,#comments,#secondary,footer,p,table,form {
-display:none;
-}
