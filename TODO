@@ -1,0 +1,34 @@
+#properly uninstall
+	#delete card_template
+	#delete fonts/
+	#delete generated/
+	#remove all options
+#delete generated/ on roster update
+#delete generated on card update
+#option to clear generated
+delete generated on format change for text groups
+#delete generated on Netami Lekhiket update
+accept more DOB formats/specify format
+support other card template file types
+limit card generation to dues-current
+black and white print option
+#upload font files on options page
+#delete font files on options page
+	#list fonts with delete checkboxes
+	#note if used or not (disable delete checkbox if used and prevent deletion) (set format for text groups before checking, error if used)
+	#sanitize POST to only subfiles of fonts/
+style text
+	#specify font
+	#specify coordinates
+	enable/disable each text group
+	make sure settings are valid
+option for card dimensions
+#preview card on options page
+#if no card template, don't print cards
+if fonts not available, don't print cards
+option to not print cards
+#option to set lodge
+if no fonts, remove "delete"
+more informative messages from functions
+write generated card file names as OALMID and Firstname concatenated and sha1 hashed
+option to disable each text item
