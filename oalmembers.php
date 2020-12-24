@@ -695,7 +695,7 @@ function oalmembers_lookup_record() {
 			$chapter = $result['chapter'];
 			$level = $result['level'];
 			$ordeal = strtotime($result['ordealdate']);
-			$brotherhood = (0 == $result['brotherhooddate']) ?  strtotime(date('Y-m-d', $ordeal) . ' +10 months') : strtotime($result['brotherhooddate']);
+			$brotherhood = (0 == $result['brotherhooddate']) ?  strtotime(date('Y-m-d', $ordeal) . ' +6 months') : strtotime($result['brotherhooddate']);
 			$vigil = (0 == $result['vigildate']) ? strtotime(date('Y-m-d', $brotherhood) . ' +2 years') : strtotime($result['vigildate']);
 			$html .= "<script type='text/javascript'>";
 			$html .= "var ss = document.createElement('link');";
