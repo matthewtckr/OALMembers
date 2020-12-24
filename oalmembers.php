@@ -52,8 +52,19 @@ function oalmembers_install() {
 	add_option( "oalmembers_style_title", array("HelveticaLTStd-Cond.otf","27",155,1013));
 	add_option( "oalmembers_style_netami", array("LinotypeZapfino Three.ttf","60", 250,907));
 	add_option( "oalmembers_style_expire", array("HelveticaLTStd-Roman.otf","33",749,897));
-	add_option( "oalmembers_style_barcode", array("code39.ttf","80",560,740));
+	add_option( "oalmembers_style_barcode", array("code39.ttf","72",600,740));
 	add_option( "oalmembers_style_code", array("Courier10PitchBT-Roman.otf","24",650,715));
+}
+
+function oalmembers_activate() {
+	if( !wp_next_scheduled( 'oalmembers_cron_hourly' ) ) {
+		wp_schedule_event( time(), 'hourly', 'oalmembers_cron_hourly' );
+	}
+	add_action ('oalmembers_cron_hourly', array( $this, 'oalmembers_delete_cardimages') );
+}
+
+function oalmembers_deactivate() {
+	wp_clear_scheduled_hook('oalmembers_cron_hourly');
 }
 
 function oalmembers_uninstall() {
@@ -77,8 +88,12 @@ function oalmembers_uninstall() {
 
 	oalmembers_delete_font("all");
 	
-	oalmembers_delete_cards();
+	oalmembers_delete_cardimages();
 }
+register_activation_hook(__FILE__, 'oalmembers_activate');
+register_deactivation_hook(__FILE__, 'oalmembers_deactivate');
+register_uninstall_hook(__FILE__, 'oalmembers_uninstall');
+
 
 function oalmembers_menu() {
 	add_submenu_page('tools.php', 'OALM Member Options', 'OALM Member Lookup', 'manage_options', 'oalmembers_options', 'oalmembers_options');
@@ -98,7 +113,7 @@ function oalmembers_options() {
 		if ($lodge = $_POST['update_lodge'])
 			$lodge_updated = oalmembers_update_lodge($lodge);
 		if ($delete_cards = $_POST['delete_cards'])
-			$cards_deleted = oalmembers_delete_cards();
+			$cards_deleted = oalmembers_delete_cardimages();
 		if ($card_template = $_FILES['upload_card']['tmp_name'])
 			$card_updated = oalmembers_upload_card($card_template);
 
@@ -153,18 +168,18 @@ function oalmembers_options() {
 	}
 	echo '<p>In OA Lodgemaster, create a CSV export file (field delimiter: ",", no field enclosures, line ending: "\r\n", and headers as listed after each field name below) that contains:';
 	echo '<ul>';
-	echo '<li>BSA Person ID "bsa_id"</li>';
-	echo '<li>OALM ID "oalm_id"</li>';
-	echo '<li>Dues "max_dues"<li>';
-	echo '<li>Firstname "firstname"</li>';
-	echo '<li>Lastname "lastname"</li>';
-	echo '<li>Suffix "suffix"</li>';
-	echo '<li>Date of Birth "dob"</li>';
-	echo '<li>Chapter "chapter"</li>';
-	echo '<li>Level "level"</li>';
-	echo '<li>Ordeal Date "ordeal_date"</li>';
-	echo '<li>Brotherhood Date "brotherhood_date"</li>';
-	echo '<li>Vigil Induction Date "vigil_date"</li>';
+	echo '<li>BSA Person ID "BSA ID"</li>';
+	echo '<li>OALM ID "OALM ID"</li>';
+	echo '<li>Dues "Dues Yr."<li>';
+	echo '<li>Firstname "First Name"</li>';
+	echo '<li>Lastname "Last Name"</li>';
+	echo '<li>Suffix "Suffix"</li>';
+	echo '<li>Date of Birth "Date Of Birth"</li>';
+	echo '<li>Chapter "Chapter"</li>';
+	echo '<li>Level "Level"</li>';
+	echo '<li>Ordeal Date "Ordeal Date"</li>';
+	echo '<li>Brotherhood Date "Bro. Date"</li>';
+	echo '<li>Vigil Induction Date "Vigil Date"</li>';
 	echo '</ul></p>';
 	echo '<br />';
 	echo '<form id="oalmembers_upload" name="oalmembers_upload" method="post" action="" enctype="multipart/form-data" class="oalmembers_upload_form">';
@@ -429,7 +444,7 @@ function oalmembers_options() {
 	echo '</div>';
 }
 
-function importcsv($file,$head=false,$delim=",",$len=1000) {
+function oalmembers_importcsv($file,$head=false,$delim=",",$len=1000) {
     $return = false;
     $handle = fopen($file, "r");
     if ($head) {
@@ -453,46 +468,42 @@ function oalmembers_reload($file) {
 	global $wpdb;
 	global $oalmembers_table_name;
 	$table_name = $wpdb->prefix . $oalmembers_table_name;
-	$arrData = importcsv($file,true);
+	$arrData = oalmembers_importcsv($file,true);
 	$wpdb->query("DELETE FROM $table_name");
 	$rows_imported = 0;
 	foreach ($arrData as $row) {
-		if(null == $row['bsa_id']) continue;
-		if(null == $row['dob']) continue;
-		if(null == $row['ordeal_date']) continue;
-		$bsaid = absint($row['bsa_id']);
-		$oalmid = absint($row['oalm_id']);
-		$birthdate = date('Y-m-d', strtotime($row['dob']));
-		$chapter = $row['chapter'];
-		$firstname = $row['firstname'];
-		$lastname = $row['lastname'];
-		$suffix = $row['suffix'];
-		$level = $row['level'];
-		$ordealdate = date('Y-m-d', strtotime($row['ordeal_date']));
-		$brotherhooddate = ('' == strtotime($row['brotherhood_date'])) ? null : date('Y-m-d', strtotime($row['brotherhood_date']));
-		$vigildate = ('' == $row['vigil_date']) ? null : date('Y-m-d', strtotime($row['vigil_date']));
-		$dues = absint($row['max_dues']);
+		if(null == $row['BSA ID']) continue;
+		if(null == $row['Date Of Birth']) continue;
+		if(null == $row['Ordeal Date']) continue;
+		$bsaid = absint($row['BSA ID']);
+		$oalmid = absint($row['OALM ID']);
+		$birthdate = date('Y-m-d', strtotime($row['Date Of Birth']));
+		$chapter = $row['Chapter'];
+		$firstname = $row['First Name'];
+		$lastname = $row['Last Name'];
+		$suffix = $row['Suffix'];
+		$level = $row['Level'];
+		$ordealdate = date('Y-m-d', strtotime($row['Ordeal Date']));
+		$brotherhooddate = ('' == strtotime($row['Bro. Date'])) ? null : date('Y-m-d', strtotime($row['Bro. Date']));
+		$vigildate = ('' == $row['Vigil Date']) ? null : date('Y-m-d', strtotime($row['Vigil Date']));
+		$dues = absint($row['Dues Yr.']);
 		$wpdb->query($wpdb->prepare("INSERT INTO $table_name (bsaid, oalmid, birthdate, firstname, lastname, suffix, chapter, level, ordealdate, brotherhooddate, vigildate, dues) VALUES (%d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d)", $bsaid, $oalmid, $birthdate, $firstname, $lastname, $suffix, $chapter, $level, $ordealdate, $brotherhooddate, $vigildate, $dues));
 		$rows_imported++;
 	}
 	update_option( "oalmembers_last_update", current_time('timestamp', 0));
-	oalmembers_delete_cards();
+	oalmembers_delete_cardimages();
 	return $rows_imported;
 }
 
 function oalmembers_update_netami($netami) {
 	update_option( "oalmembers_netami", $netami);
-
-	oalmembers_delete_cards();
-
+	oalmembers_delete_cardimages();
 	return $netami;
 }
 
 function oalmembers_update_lodge($lodge) {
 	update_option( "oalmembers_lodge", $lodge);
-
-	oalmembers_delete_cards();
-
+	oalmembers_delete_cardimages();
 	return $lodge;
 }
 
@@ -500,8 +511,6 @@ function oalmembers_upload_card($file) {
 	$target = OALMEMBERS_PLUGIN_PATH . "/card_template.png";
 	move_uploaded_file( $file, $target ); 
 	$template_url = OALMEMBERS_PLUGIN_URL . '/card_template.png';
-
-	oalmembers_delete_cards();
 
 	return $template_url;
 }
@@ -577,7 +586,7 @@ function oalmembers_generate_card($overwrite, $firstname, $lastname, $suffix, $l
 	if($level == "Vigil")
         	$level_suffix = " Honor";
 
-	$hashed_id = sha1($oalmid);
+	$hashed_id = sha1($oalmid . date('Y-m-d'));
 	$path = OALMEMBERS_PLUGIN_PATH . "/generated/";
 	$filename = $hashed_id . ".png";
 	$full_path = $path . $filename;
@@ -655,13 +664,12 @@ function oalmembers_delete_font($font_name) {
 	return 0;
 }
 
-function oalmembers_delete_cards() {
-	$files = glob(OALMEMBERS_PLUGIN_PATH . "generated/*"); // get all file names
+function oalmembers_delete_cardimages() {
+	$files = glob(OALMEMBERS_PLUGIN_PATH . "/generated/*.png"); // get all file names
 	foreach($files as $file){ // iterate files
 		if(is_file($file))
 			unlink($file); // delete file
 	}
-	rmdir(OALMEMBERS_PLUGIN_PATH . "generated");
 
 	return 0;
 }
@@ -761,16 +769,16 @@ function oalmembers_lookup_record() {
 	$html .= '<form id="oalmembers" name="oalmembers" method="post" action="" class="oalmembers-form">';
 	$html .= '<fieldset name="bsaid" style="margin-bottom:10px;">';
 	$html .= '<label for="bsaid" style="margin-right:10px;">BSA ID:</label>';
-	$html .= '<input type="text" id="bsaid" value="" name="bsaid" />';
+	$html .= '<input type="text" id="bsaid" value="" name="bsaid"/>';
 	$html .= '</fieldset>';
 	$html .= '<fieldset name="birthdate" style="margin-bottom:10px;">';
 	$html .= '<label for="birthdate" style="margin-right:10px;">Birthdate:</label>';
-	$html .= '<input type="text" id="birthdate" value="" name="birthdate" />';
+	$html .= '<input type="text" id="birthdate" value="" name="birthdate" placeholder="MM/dd/yyyy"/>';
 	$html .= '</fieldset>';
 	$html .= '<fieldset class="submit">';
-	$html .= '<input type="submit" value="Search" id="submit" />';
+	$html .= '<input type="submit" value="Search" id="submit"/>';
 	$html .= '</fieldset>';
-	$html .= '<input type="hidden" name="action" value="oalmembers search" />';
+	$html .= '<input type="hidden" name="action" value="oalmembers search"/>';
 	//wp_nonce_field('new-post');
 	$html .= '</form>';
 	$html .= "</div>";
